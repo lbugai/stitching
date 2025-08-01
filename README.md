@@ -1,1 +1,1 @@
-# stitching
+# Volumetric data stitching experiments pipeline
