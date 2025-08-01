@@ -3,8 +3,16 @@
 
 ## Конфигурация виртуального окружения для работы прогонщика.
 Для настройки виртуального окружения необходимо проделать следующие шаги:
-1. Создать чистое виртуальное окружение с помощью [virtualenv](https://virtualenv.pypa.io/en/latest/installation.html): `python –m venv venv_name`. Также можно воспользоваться [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html) .
-2. После активации окружения запустить в терминале из папки с файлом `required_libraries.txt` команду `pip install -r required_libraries.txt` для установки неоходимых пакетов.
+1. Создать чистое виртуальное окружение с помощью [virtualenv](https://virtualenv.pypa.io/en/latest/installation.html):
+```shell
+python –m venv venv_name
+```
+ Также можно воспользоваться [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html) .
+
+3. После активации окружения для установки неоходимых пакетов запустить в терминале из папки с файлом `required_libraries.txt` команду
+```shell
+pip install -r required_libraries.txt
+``` 
 
 ## Запуск прогонщика.
 
