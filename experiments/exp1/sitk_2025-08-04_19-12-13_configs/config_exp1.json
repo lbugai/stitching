@@ -1,0 +1,28 @@
+{
+    "path_to_main_folder" : "A:/stitching/github_guide_dubna/experiments/",
+    "exp" : 1,
+    "algorithm_name" : "sitk",
+    "algorithm_help" : {
+        "1" : "sitk"
+    },
+    "algorithm_execution_parameters_path": "A:/stitching/github_guide_dubna/experiments/algorithms_configs/sitk_config.json",
+    "algorithm_executable_path": "A:/stitching/github_guide_dubna/runner/SITK.py",
+    "alg_interpreter_path": "A:/stitching/test_venv/Scripts/python.exe",
+
+    "VolumeLoadingMode": "TwoVolumes",
+    "registered_volumes_writing": true,
+    "minimize_padding" : true,
+    "calculate_metrics": false,
+    "path_to_gt_matrix_json" : "",
+    "SelectedVisualizedMetricsList" : ["MSE",
+                                       "normalized maximum deviation of distances (from geometry MSE)",
+                                       "maximum deviation of distances (from geometry MSE)",
+                                       "norm_geometry_rmse",
+                                       "geometry_rmse",
+                                       "norm_geometry_MSE"],
+
+    "path_to_markup" : "A:/stitching/github_guide_dubna/experiments/test_data/nut/",
+    "path_to_moving" : "A:/stitching/github_guide_dubna/experiments/test_data/nut_enlarged/",
+    "path_to_inital_transform_matrix_json" : "none_given"
+}
+
