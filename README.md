@@ -22,27 +22,36 @@ pip install -r required_libraries.txt
 ## Работа с прогонщиком.
 ### Структура папок
 Для работы с прогонщиком потребуется создать структуру папок и файлов следующего вида (пример такой структуры представлен в репозитории, поэтому его можно клонировать и использовать после настройки конфигов):
-- runner
-  - experiment_runner.py
-  - metrics.py
-  - parser.py
-  - registration_gui.py
-  - required_libraries.txt
-  - results_visualization.py
-  - sample_creator.py
-  - SITK.py
-- experiments
-  - algorithms_configs
-    - sitk_config.json
-  - exp0
-     - config_exp0.json
-  - exp1
-     - config_exp1.json
-  - test_data
-     - data1
-       - ...
-     - data2
-       - ...
+- `runner`
+  - `experiment_runner.py`
+  - `metrics.py`
+  - `parser.py`
+  - `registration_gui.py`
+  - `required_libraries.txt`
+  - `results_visualization.py`
+  - `sample_creator.py`
+  - `SITK.py`
+- `experiments`
+  - `algorithms_configs`
+    - `sitk_config.json`
+  - `exp0`
+     - `config_exp0.json`
+  - `exp1`
+     - `config_exp1.json`
+  - `test_data`
+     - `data1`
+       - `...`
+     - `data2`
+       - `...`
   
+В папке `runner` содержатся файлы для запуска прогонщика, а также файл [`required_libraries.txt`](https://github.com/lbugai/stitching/blob/main/required_libraries.txt) с необходимыми библиотеками.
+
+Папка `experiments` - это основная папка, содержащая все эксперименты `exp`. `Все эксперименты необходимо запускать из папки experiments`: для каждого эксперимента с номером `N` создается папка `expN`, туда помещается конфиг эксперимента `config_expN.json`. Количество экспериментов неограничено.
+
+Также в `experiments` есть папка `algorithms_configs`, содержащая конфиги методов, их может быть сколько угодно. Вообще говоря, конфиги могут иметь любое расположение. `Расположение конфигов методов указывается в конфиге эксперимента`, но для удобства папка `algorithms_configs` с ними добавлена в `experiments`. 
+
+### Запуск тестового примера.
+
+
 
 
