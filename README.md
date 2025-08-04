@@ -92,7 +92,7 @@ pip install -r required_libraries.txt
 
     "path_to_markup" : "/path/to/experiments/test_data/nut/", # путь до неизменяемого объема, к которому будет приводится объем moving, может иметь любое расположение
     "path_to_moving" : "/path/to/experiments/test_data/nut_rotated/", # путь до изменяемого объема, который будет приводится к markup, может иметь любое расположение
-    "path_to_inital_transform_matrix_json" : "/path/to/experiments/test_data/nut_rotated/initial_matrix.json" # можно указать начальное преобразование для помощи методу. Пример json'a с нач. преобразование содержится в папке тестового объема nut_rotated 
+    "path_to_inital_transform_matrix_json" : "/path/to/experiments/test_data/nut_rotated/initial_matrix.json" # можно указать начальное преобразование для помощи методу. Пример json'a с нач. преобразованием содержится в папке тестового объема nut_rotated 
 }
 
 
