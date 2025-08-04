@@ -61,5 +61,41 @@ pip install -r required_libraries.txt
 
 В репозитории представлено два эксперимента с парами данных в первом `nut` и `nut_rotated` (повернутый `nut`) и во втором `nut` и `nut_rotated` (увеличенный `nut`).
 
+Для запуска примеров необходимо настроить конфиги экспериментов.
 
 
+<details><summary>Описание параметров конфига эксперимента 0.</summary>
+
+```json
+{
+    "path_to_main_folder" : "/path/to/experiments/", # путь до основной папки experiments
+    "exp" : 0, # для каждого эксперимента создается папка exp с номером, туда копируется этот конфиг и редактируется. В конфиге в папке expN этот параметр тоже должен быть N, ИНАЧЕ ЭКСПЕРИМЕНТ С УКАЗАННЫМ ЗДЕСЬ НОМЕРОМ ПЕРЕЗАПИШЕТСЯ.
+    "algorithm_name" : "sitk",
+    "algorithm_help" : {
+        "1" : "sitk"
+    },
+    "algorithm_execution_parameters_path": "/path/to/experiments/algorithms_configs/sitk_config.json", # путь до конфига с настройкой параметров метода, для каждого эксперимента можно сделать такой конфиг и хранить например в папке exp
+    "algorithm_executable_path": "/path/to/runner/SITK.py", # путь до скрипта с методом 
+    "alg_interpreter_path": "/path/to/venv_name/Scripts/python.exe", # путь до файла python.exe вашего окружения
+
+    "VolumeLoadingMode": "TwoVolumes", # не изменять
+    "registered_volumes_writing": true, # если указать false, то результаты совмещения не будут отписываться, только то, что в консоли
+    "minimize_padding" : true,
+    "calculate_metrics": false, # флаг для вычисления метрик - для этого нужно указать эталонное преобразование gt по примеру initial (будет ниже)
+    "path_to_gt_matrix_json" : "",
+    "SelectedVisualizedMetricsList" : ["MSE",
+                                       "normalized maximum deviation of distances (from geometry MSE)",
+                                       "maximum deviation of distances (from geometry MSE)",
+                                       "norm_geometry_rmse",
+                                       "geometry_rmse",
+                                       "norm_geometry_MSE"],
+
+    "path_to_markup" : "/path/to/experiments/test_data/nut/", # путь до неизменяемого объема, к которому будет приводится объем moving, может иметь любое расположение
+    "path_to_moving" : "/path/to/experiments/test_data/nut_rotated/", # путь до изменяемого объема, который будет приводится к markup, может иметь любое расположение
+    "path_to_inital_transform_matrix_json" : "/path/to/experiments/test_data/nut_rotated/initial_matrix.json" # можно указать начальное преобразование для помощи методу. Пример json'a с нач. преобразование содержится в папке тестового объема nut_rotated 
+}
+
+
+```
+
+</details>
