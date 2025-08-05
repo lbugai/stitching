@@ -64,35 +64,63 @@ pip install -r required_libraries.txt
 Для запуска примеров необходимо настроить конфиги экспериментов.
 
 
-<details><summary>Описание параметров конфига эксперимента 0.</summary>
+<details><summary>Описание параметров конфига эксперимента.</summary>
 
 ```json
-{
-    "path_to_main_folder" : "/path/to/experiments/", # путь до основной папки experiments
-    "exp" : 0, # для каждого эксперимента создается папка exp с номером, туда копируется этот конфиг и редактируется. В конфиге в папке expN этот параметр тоже должен быть N, ИНАЧЕ ЭКСПЕРИМЕНТ С УКАЗАННЫМ ЗДЕСЬ НОМЕРОМ ПЕРЕЗАПИШЕТСЯ.
-    "algorithm_name" : "sitk",
-    "algorithm_help" : {
-        "1" : "sitk"
-    },
-    "algorithm_execution_parameters_path": "/path/to/experiments/algorithms_configs/sitk_config.json", # путь до конфига с настройкой параметров метода, для каждого эксперимента можно сделать такой конфиг и хранить например в папке exp
-    "algorithm_executable_path": "/path/to/runner/SITK.py", # путь до скрипта с методом 
-    "alg_interpreter_path": "/path/to/venv_name/Scripts/python.exe", # путь до файла python.exe вашего окружения
+{   "path_to_main_folder_info" : "Путь до основной папки (experiments в репозитории).",
+    "path_to_main_folder" : "/path/to/experiments/",
 
-    "VolumeLoadingMode": "TwoVolumes", # не изменять
-    "registered_volumes_writing": true, # если указать false, то результаты совмещения не будут отписываться, только то, что в консоли
+    "exp_info" : ["Для каждого эксперимента создается папка exp с номером, туда копируется этот конфиг и редактируется",
+                  "В конфиге в папке expN этот параметр тоже должен быть N, ИНАЧЕ ЭКСПЕРИМЕНТ С УКАЗАННЫМ ЗДЕСЬ НОМЕРОМ ПЕРЕЗАПИШЕТСЯ."],
+    "exp" : 0,
+
+    "algorithm_name_info" : "Задает название папки, НЕ МЕТОД, метод задается исполняемым файлом и конфигом с настройками." 
+    "algorithm_name" : "sitk",
+    "algorithm_name_examples" : {
+        "1" : "sitk",
+        "2" : "sith",
+        "3" : "any_convenient_name_for_the_method"
+    },
+
+    "algorithm_execution_parameters_path_info" : "Путь до конфига метода, может иметь любое расположение и название.",
+    "algorithm_execution_parameters_path" : "/path/to/experiments/algorithms_configs/sitk_config.json",
+
+    "algorithm_executable_path_info" : "Путь до скрипта с методом.", 
+    "algorithm_executable_path" : "/path/to/runner/SITK.py",
+
+    "alg_interpreter_path_info" : "Путь до файла python.exe вашего окружения.",
+    "alg_interpreter_path" : "/path/to/venv_name/Scripts/python.exe", # 
+
+    "VolumeLoadingMode": "TwoVolumes", # Не изменять.
+
+    "registered_volumes_writing_info" : ["Флаг для сохранения результата совмещения.",
+                                    "Если указать false, то результаты совмещения не будут отписываться в тифы, только то, что в консоли."]
+    "registered_volumes_writing" : true,
+
     "minimize_padding" : true,
-    "calculate_metrics": false, # флаг для вычисления метрик - для этого нужно указать эталонное преобразование gt по примеру initial (будет ниже)
+
+    "calculate_metrics_info" : "Флаг для вычисления метрик - для этого нужно указать эталонное преобразование в поле ниже",
+    "calculate_metrics" : false,
+
+    "path_to_gt_matrix_json_info" : "Путь до эталонного преобразования (пример есть в репозитории в nut_rotated.rar).",
     "path_to_gt_matrix_json" : "",
+
+    "SelectedVisualizedMetricsList_info" : "Метрики, которые будут рассчитываться, если включен флаг calculate_metrics."
     "SelectedVisualizedMetricsList" : ["MSE",
                                        "normalized maximum deviation of distances (from geometry MSE)",
                                        "maximum deviation of distances (from geometry MSE)",
                                        "norm_geometry_rmse",
                                        "geometry_rmse",
                                        "norm_geometry_MSE"],
+    "path_to_markup_info" : "Путь до целевого объема, к которому будет приводится объем moving, может иметь любое расположение.",
+    "path_to_markup" : "/path/to/experiments/test_data/nut/",
 
-    "path_to_markup" : "/path/to/experiments/test_data/nut/", # путь до неизменяемого объема, к которому будет приводится объем moving, может иметь любое расположение
-    "path_to_moving" : "/path/to/experiments/test_data/nut_rotated/", # путь до изменяемого объема, который будет приводится к markup, может иметь любое расположение
-    "path_to_inital_transform_matrix_json" : "/path/to/experiments/test_data/nut_rotated/initial_matrix.json" # можно указать начальное преобразование для помощи методу. Пример json'a с нач. преобразованием содержится в папке тестового объема nut_rotated 
+    "path_to_moving_info" : "Путь до изменяемого объема, преобразуемый для приведения в координаты целевого объёма markup, может иметь любое расположение.",
+    "path_to_moving" : "/path/to/experiments/test_data/nut_rotated/",
+
+    "path_to_inital_transform_matrix_json_info" : ["Путь до .json с начальным преобразованием, которое будет доуточняться методом (преобразование из moving в markup).",
+                                                   "Пример json'a с нач. преобразованием содержится в папке тестового объема nut_rotated."], 
+    "path_to_inital_transform_matrix_json" : "/path/to/experiments/test_data/nut_rotated/initial_matrix.json" 
 }
 
 
