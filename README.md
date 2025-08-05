@@ -89,9 +89,10 @@ pip install -r required_libraries.txt
     "algorithm_executable_path" : "/path/to/runner/SITK.py",
 
     "alg_interpreter_path_info" : "Путь до файла python.exe вашего окружения.",
-    "alg_interpreter_path" : "/path/to/venv_name/Scripts/python.exe", # 
+    "alg_interpreter_path" : "/path/to/venv_name/Scripts/python.exe",
 
-    "VolumeLoadingMode": "TwoVolumes", # Не изменять.
+    "VolumeLoadingMode_info" : "Не изменять.",
+    "VolumeLoadingMode" : "TwoVolumes",
 
     "registered_volumes_writing_info" : ["Флаг для сохранения результата совмещения.",
                                     "Если указать false, то результаты совмещения не будут отписываться в тифы, только то, что в консоли."]
