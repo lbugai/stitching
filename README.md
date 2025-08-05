@@ -74,7 +74,7 @@ pip install -r required_libraries.txt
                   "В конфиге в папке expN этот параметр тоже должен быть N, ИНАЧЕ ЭКСПЕРИМЕНТ С УКАЗАННЫМ ЗДЕСЬ НОМЕРОМ ПЕРЕЗАПИШЕТСЯ."],
     "exp" : 0,
 
-    "algorithm_name_info" : "Задает название папки, НЕ МЕТОД, метод задается исполняемым файлом и конфигом с настройками." 
+    "algorithm_name_info" : "Задает название папки, НЕ МЕТОД, метод задается исполняемым файлом и конфигом с настройками.",
     "algorithm_name" : "sitk",
     "algorithm_name_examples" : {
         "1" : "sitk",
@@ -95,7 +95,7 @@ pip install -r required_libraries.txt
     "VolumeLoadingMode" : "TwoVolumes",
 
     "registered_volumes_writing_info" : ["Флаг для сохранения результата совмещения.",
-                                    "Если указать false, то результаты совмещения не будут отписываться в тифы, только то, что в консоли."]
+                                    "Если указать false, то результаты совмещения не будут отписываться в тифы, только то, что в консоли."],
     "registered_volumes_writing" : true,
 
     "minimize_padding" : true,
@@ -106,13 +106,14 @@ pip install -r required_libraries.txt
     "path_to_gt_matrix_json_info" : "Путь до эталонного преобразования (пример есть в репозитории в nut_rotated.rar).",
     "path_to_gt_matrix_json" : "",
 
-    "SelectedVisualizedMetricsList_info" : "Метрики, которые будут рассчитываться, если включен флаг calculate_metrics."
+    "SelectedVisualizedMetricsList_info" : "Метрики, которые будут рассчитываться, если включен флаг calculate_metrics.",
     "SelectedVisualizedMetricsList" : ["MSE",
                                        "normalized maximum deviation of distances (from geometry MSE)",
                                        "maximum deviation of distances (from geometry MSE)",
                                        "norm_geometry_rmse",
                                        "geometry_rmse",
                                        "norm_geometry_MSE"],
+
     "path_to_markup_info" : "Путь до целевого объема, к которому будет приводится объем moving, может иметь любое расположение.",
     "path_to_markup" : "/path/to/experiments/test_data/nut/",
 
