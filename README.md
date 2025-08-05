@@ -44,7 +44,7 @@ pip install -r required_libraries.txt
      - `data2`
        - `...`
   
-В папке `runner` (может иметь любое название) содержатся файлы для запуска прогонщика, а также файл [`required_libraries.txt`](https://github.com/lbugai/stitching/blob/main/required_libraries.txt) с необходимыми библиотеками.
+В папке `runner` (может иметь любое название) содержатся файлы для запуска прогонщика, а также файл [`required_libraries.txt`](https://github.com/lbugai/stitching/blob/main/runner/required_libraries.txt) с необходимыми библиотеками.
 
 Папка `experiments` (может иметь любое название) - это основная папка, содержащая все эксперименты `exp`. `Все эксперименты необходимо запускать из папки experiments`: для каждого эксперимента с номером `N` создается папка `expN`, туда помещается конфиг эксперимента `config_expN.json`. Количество экспериментов неограничено.
 
