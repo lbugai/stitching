@@ -171,7 +171,7 @@ python experiment_runner.py /path/to/experiments/exp1/config_exp1.json
            одно относится к полю InitalTransform выше и задает ручной режим определения начального преобразования SITK,
            другое относится к полю InitialTranslationOption ниже.
            При InitialTranslationOption = MANUAL необходимо вручную заполнить поле translation,
-           иначе SITK сам рассчитает начальное смещение (при значениях  "GEOMETRY", "MOMENTS").
+           иначе SITK сам рассчитает начальное смещение (при значениях  GEOMETRY и MOMENTS).
   "InitialTransformParams":{
     "info" : "Настройка режима InitalTransform MANUAL.",
     "scale": 1.0,
