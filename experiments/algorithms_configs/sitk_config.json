@@ -2,11 +2,7 @@
   "TransformType": "Similarity",
   "InitalTransform": "MOMENTS",
   "initial_transform_help": {
-    "geometrical center to geometrical center translation" : "GEOMETRY",
-    "center of mass to center of mass translation" : "MOMENTS",
-    "landmark based initial transform" : "POINTS",
-    "from given in main pipline matrix" : "MATRIX",
-    "set initial transform manually" : "MANUAL"
+    "possible_options" : ["GEOMETRY", "MOMENTS", "POINTS", "MATRIX", "MANUAL"]
   },
   "imagej_landmark_coords_file_path" : "",
   "InitialTransformParams":{
@@ -14,9 +10,7 @@
     "rotation": [0.0 , 0.0, 0.0],
     "InitialTranslationOption": "GEOMETRY",
     "InitialTranslationOptionHelp":{
-      "same as in initial_transform_help" : "GEOMETRY",
-      "same as in initial_transform_help " : "MOMENTS",
-      "will be set as given below in XYZ order" : "MANUAL"
+      "possible_options" : ["GEOMETRY", "MOMENTS", "MANUAL"]
     },
     "translation": [0, 0, 0]
   },
@@ -40,3 +34,4 @@
   "ShrinkFactors": [4,2,1],
   "SmoothingSigmas": [2,1,0]
 }
+
