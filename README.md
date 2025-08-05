@@ -95,7 +95,7 @@ pip install -r required_libraries.txt
     "VolumeLoadingMode" : "TwoVolumes",
 
     "registered_volumes_writing_info" : ["Флаг для сохранения результата совмещения.",
-                                    "Если указать false, то результаты совмещения не будут отписываться в тифы, только то, что в консоли."],
+                                         "Если указать false, то результаты совмещения не будут отписываться в тифы, только то, что в консоли."],
     "registered_volumes_writing" : true,
 
     "minimize_padding" : true,
