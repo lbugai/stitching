@@ -166,8 +166,12 @@ python experiment_runner.py /path/to/experiments/exp1/config_exp1.json
   "initial_transform_help": {
     "possible_options" : ["GEOMETRY", "MOMENTS", "POINTS", "MATRIX", "MANUAL"]
   },
-  "InitialTransformParams_info" : "Настройка режима InitalTransform MANUAL",
+
+  "note" : "Здесь фигурирует два разных значения MANUAL - одно задает ручной режим определения начального преобразования SITK в поле InitalTransform,
+           другое относится к полю InitialTranslationOption ниже,
+           при InitialTranslationOption = MANUAL поле translation указать вручную, иначе SITK сам рассчитает начальное смещение (значения  "GEOMETRY", "MOMENTS")",
   "InitialTransformParams":{
+    "info" : "Настройка режима InitalTransform MANUAL.",
     "scale": 1.0,
     "rotation": [0.0 , 0.0, 0.0],
     "InitialTranslationOption": "GEOMETRY",
