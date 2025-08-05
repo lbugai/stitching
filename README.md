@@ -159,7 +159,25 @@ python experiment_runner.py /path/to/experiments/exp1/config_exp1.json
 - `MOMENTS` - центр масс одного трехмерного изображения приводится к центру масс другого изображения, только преобразование смещения;
 - `POINTS` - режим на основе ручной разметки особых точек;
 - `MATRIX` - начальное преобразование задается матрицей `4x4` в файле .json, этот способ был описан в предыдущем разделе `Работа с прогонщиком`;
-- `MANUAL` - ручная тонкая настройка преобразования в конфиге, позволяет отдельно задать масштаб, вращение (в порядке `xyz`), смещение (в порядке `xyz`), причем смещение задается либо вручную отдельно по каждой координате, либо с помощью описанных выше режимов `GEOMETRY` и `MOMENTS`.
+- `MANUAL` - ручная тонкая настройка преобразования в конфиге, позволяет отдельно задать масштаб, вращение (в порядке `xyz`), смещение (в порядке `xyz`), причем смещение задается либо вручную отдельно по каждой координате (режим `MANUAL`), либо с помощью описанных выше режимов `GEOMETRY` и `MOMENTS`.
+
+```json
+"InitalTransform": "MOMENTS",
+  "initial_transform_help": {
+    "possible_options" : ["GEOMETRY", "MOMENTS", "POINTS", "MATRIX", "MANUAL"]
+  },
+  "InitialTransformParams_info" : "Настройка режима InitalTransform MANUAL",
+  "InitialTransformParams":{
+    "scale": 1.0,
+    "rotation": [0.0 , 0.0, 0.0],
+    "InitialTranslationOption": "GEOMETRY",
+    "InitialTranslationOptionHelp":{
+      "possible_options" : ["GEOMETRY", "MOMENTS", "MANUAL"]
+    },
+    "translation_info" : "Задействуется только если InitialTranslationOption = MANUAL.",
+    "translation": [0, 0, 0]
+  },
+```
 
 Первые два режима сразу встроены в `SITK`, другие интегрируются в его работу после некоторой обработки.
 
