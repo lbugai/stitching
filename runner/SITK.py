@@ -5,6 +5,8 @@ import sys
 import json
 from PIL import Image
 import registration_gui as rgui
+from collections import Counter
+import re
 
 def inverse_affine_4x4(matrix_4x4):
     """
@@ -482,9 +484,9 @@ if __name__ == "__main__":
         alg_params = json.load(json_file)
 
     print(f"Loading markup from path: {markup_volume_path}")
-    markup_volume = load_tifs_volume(markup_volume_path)
+    markup_volume = load_volume_from_dir(markup_volume_path)
     print(f"Loading test from path: {test_volume_path}")
-    test_volume = load_tifs_volume(test_volume_path)
+    test_volume = load_volume_from_dir(test_volume_path)
     print("run_SITK")
     if initial_transform_matrix_path[-10:] != "none_given":
         with open(initial_transform_matrix_path, 'r', encoding='UTF-8') as json_file:
@@ -502,3 +504,4 @@ if __name__ == "__main__":
         json.dump(alg_result, file)
 
     print(f'is_good_result = {is_good_result}')
+
