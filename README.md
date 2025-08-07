@@ -142,7 +142,7 @@ pip install -r required_libraries.txt
 ```shell
 python experiment_runner.py /path/to/experiments/exp0/config_exp0.json
 ```
-Аналогично, прогон эксперимента `№1`
+Аналогично, прогон эксперимента `№1` (предварительно в конфиге метода `sitk_config.json` в поле `InitalTransform` необходимо указать значение `MOMENTS`)
 ```shell
 python experiment_runner.py /path/to/experiments/exp1/config_exp1.json
 ```
