@@ -165,7 +165,7 @@ python experiment_runner.py /path/to/experiments/exp1/config_exp1.json
 - `MANUAL` - ручная тонкая настройка преобразования в конфиге, позволяет отдельно задать масштаб, вращение (в порядке `xyz`), смещение (в порядке `xyz`), причем смещение задается либо вручную отдельно по каждой координате (режим `MANUAL`), либо с помощью описанных выше режимов `GEOMETRY` и `MOMENTS`.
 
 ```json
-"InitalTransform": "MOMENTS",
+{"InitalTransform": "MOMENTS",
   "initial_transform_help": {
     "possible_options" : ["GEOMETRY", "MOMENTS", "POINTS", "MATRIX", "MANUAL"]
   },
@@ -270,4 +270,5 @@ python experiment_runner.py /path/to/experiments/exp1/config_exp1.json
 
 "SmoothingSigmas" : "Задает гауссово размытие на указанный уровнях сжатия изображения для большей гладкости оптимизируемой функции метрики.",
 "SmoothingSigmas" : [2,1,0]
+}
 ```
