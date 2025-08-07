@@ -14,7 +14,7 @@ python -m venv venv_name
  
  2. Активировать окружение:
 ```shell
-path/to/venv_name/Scripts/activate.bat
+path\to\venv_name\Scripts\activate.bat
 ```
 
 3. Запустить в терминале из папки с файлом `required_libraries.txt` команду
