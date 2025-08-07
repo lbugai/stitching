@@ -391,12 +391,9 @@ def SITK3DReg(markup_volume:np.ndarray,test_volume:np.ndarray, metrics_folder_pa
     #saving transformation matrices
     with open(f'{os.path.join(metrics_folder_path,"matrices.json")}', 'w', encoding='UTF-8') as f:
         json.dump({"matrix":inv_transform, "inv_matrix":transform}, f)
-        
-
     np.save(f'{os.path.join(metrics_folder_path,"transformation_estimated.npy")}', np.array(inv_transform))
     np.save(f'{os.path.join(metrics_folder_path,"inv_transformation_estimated.npy")}', np.array(transform))
     return(1)
-
 
 def load_volume(files, size_z, size_y, size_x):#, sigma = None):
     """
@@ -410,23 +407,65 @@ def load_volume(files, size_z, size_y, size_x):#, sigma = None):
     print(f'Load slice number {len(files)}/{len(files)}')
     return volume
 
-def load_tifs_volume(in_path, images_format = '.tif'):
+def natural_sort_key(s):
     """
-    Returns npy array with volume by given tiffs path.
+    Key function for natural sorting of strings containing numbers.
     """
-    files = os.listdir(in_path)
-    tif_files = sorted([x for x in files if images_format in x])#, key=intfunc)
-    size_z = len(tif_files)
-    file_paths = [os.path.join(in_path, x) for x in tif_files]
-                #get_paths_images(in_path, size_z, images_format)
+    return [int(text) if text.isdigit() else text.lower() 
+            for text in re.split('([0-9]+)', s)]
+
+def get_most_common_extension(files):
+    """
+    Returns the most common file extension in the list of files.
+    """
+    extensions = [os.path.splitext(f)[1].lower() for f in files]
+    if not extensions:
+        return None
+    return Counter(extensions).most_common(1)[0][0]
+
+def load_volume_from_dir(in_path):
+    """
+    Returns npy array with volume by given directory path.
+    Automatically detects and uses the most common file extension in the directory.
+    Handles different naming conventions (0.ext, 000.ext, etc.)
+    """
+    # Get all files in directory
+    all_files = [f for f in os.listdir(in_path) if os.path.isfile(os.path.join(in_path, f))]
+    
+    if not all_files:
+        raise FileNotFoundError("No files found in the directory")
+    
+    # Find most common extension
+    common_ext = get_most_common_extension(all_files)
+    if not common_ext:
+        raise ValueError("No files with extensions found in the directory (maybe DICOM).")
+    
+    print(f"Using files with extension: {common_ext}")
+    
+    # Filter files by most common extension
+    files = [f for f in all_files if os.path.splitext(f)[1].lower() == common_ext]
+    
+    if not files:
+        raise ValueError(f"No files with extension {common_ext} found")
+    
+    # Natural sort files
+    files.sort(key=natural_sort_key)
+    
+    # Get full paths
+    file_paths = [os.path.join(in_path, x) for x in files]
+    print(file_paths)
+    # Verify first file is a valid image
     try:
-        size_y = np.array(Image.open(file_paths[0])).shape[0]
-        size_x = np.array(Image.open(file_paths[0])).shape[1]
-    except FileNotFoundError:
-        print("Wrong filename pattern. Check get_paths_image function or images_format.")
-        sys.exit()
-    volume = load_volume(file_paths, size_z, size_y, size_x)
-    return volume
+        with Image.open(file_paths[0]) as img:
+            size_y, size_x = np.array(img).shape
+            
+    except Exception as e:
+        print(f"Error opening image file '{file_paths[0]}': {e}")
+        print(f"Note: Files with extension {common_ext} must be valid image files")
+        sys.exit(1)
+    print(f'size_y, size_x = {size_y, size_x}')
+    size_z = len(files)
+    return load_volume(file_paths, size_z, size_y, size_x)
 
 def numpy_parser(num):
     return np.float64(num)
@@ -461,4 +500,5 @@ if __name__ == "__main__":
 
     with open(alg_out_json, "w", encoding="utf-8") as file:
         json.dump(alg_result, file)
+
     print(f'is_good_result = {is_good_result}')
