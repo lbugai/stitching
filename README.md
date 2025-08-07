@@ -168,12 +168,13 @@ python experiment_runner.py /path/to/experiments/exp1/config_exp1.json
   },
 
 "note" : Здесь фигурирует два разных значения MANUAL:
-           одно относится к полю InitalTransform выше и задает ручной режим определения начального преобразования SITK,
-           другое относится к полю InitialTranslationOption ниже.
-           При InitialTranslationOption = MANUAL необходимо вручную заполнить поле translation,
-           иначе SITK сам рассчитает начальное смещение (при значениях  GEOMETRY и MOMENTS).
+         одно относится к полю InitalTransform выше и задает ручной режим определения начального преобразования SITK,
+         другое относится к полю InitialTranslationOption ниже - одно из полей настройки режима InitalTransform == MANUAL:
+         автоматическое совмещение центров объемов (GEOMETRY),
+         совмещени центров масс(MOMENTS)
+         или же ручное задание 3 координат смещения (MANUAL).
 "InitialTransformParams":{
-    "info" : "Настройка режима InitalTransform MANUAL.",
+    "info" : "при выборе InitalTransform == "MANUAL" параметры начального преобразования извлекаются из этого словаря.",
     "scale": 1.0,
     "rotation": [0.0 , 0.0, 0.0],
     "InitialTranslationOption": "GEOMETRY",
