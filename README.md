@@ -183,7 +183,7 @@ python experiment_runner.py /path/to/experiments/exp1/config_exp1.json
     "translation_info" : "Задействуется только если InitialTranslationOption = MANUAL.",
     "translation": [0, 0, 0]
   },
-"imagej_landmark_coords_file_path_info" : "Используется в режиме POINTS. У ImageJ есть плагин: "plugins/registration/3d landmarks",
+"imagej_landmark_coords_file_path_info" : "Используется в режиме POINTS. У ImageJ есть плагин: plugins/registration/3d landmarks,
                                            позволяющий с помощью GUI для двух объемов создать текстовый файл,
                                            содержащий списки координат соответствующих точек в 2 объемах.
                                            Здесь указывается путь до файла такого типа, который автоматически парсится,
