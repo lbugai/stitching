@@ -5,7 +5,7 @@
 Для настройки виртуального окружения необходимо проделать следующие шаги:
 1. Создать чистое виртуальное окружение с помощью [virtualenv](https://virtualenv.pypa.io/en/latest/installation.html):
 ```shell
-python –m venv venv_name
+python -m venv venv_name
 ```
  Также можно воспользоваться [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html) .
  
