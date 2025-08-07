@@ -171,7 +171,7 @@ python experiment_runner.py /path/to/experiments/exp1/config_exp1.json
          одно относится к полю InitalTransform выше и задает ручной режим определения начального преобразования SITK,
          другое относится к полю InitialTranslationOption ниже - одно из полей настройки режима InitalTransform == MANUAL:
          автоматическое совмещение центров объемов (GEOMETRY),
-         совмещени центров масс(MOMENTS)
+         совмещение центров масс(MOMENTS)
          или же ручное задание 3 координат смещения (MANUAL).
 "InitialTransformParams":{
     "info" : "при выборе InitalTransform == "MANUAL" параметры начального преобразования извлекаются из этого словаря.",
@@ -184,7 +184,8 @@ python experiment_runner.py /path/to/experiments/exp1/config_exp1.json
     "translation_info" : "Задействуется только если InitialTranslationOption = MANUAL.",
     "translation": [0, 0, 0]
   },
-"imagej_landmark_coords_file_path_info" : "Используется в режиме POINTS. У ImageJ есть плагин: plugins/registration/3d landmarks,
+"imagej_landmark_coords_file_path_info" : "Используется в режиме POINTS.
+                                           У ImageJ есть плагин: plugins/registration/3d landmarks,
                                            позволяющий с помощью GUI для двух объемов создать текстовый файл,
                                            содержащий списки координат соответствующих точек в 2 объемах.
                                            Здесь указывается путь до файла такого типа, который автоматически парсится,
