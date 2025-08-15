@@ -5,6 +5,7 @@ import sys
 import json
 import registration_gui as rgui
 from data_loader import load_volume_from_dir
+import matplotlib.pyplot as plt
 
 def inverse_affine_4x4(matrix_4x4):
     """
@@ -271,9 +272,6 @@ def SITK3DReg(markup_volume:np.ndarray,test_volume:np.ndarray, metrics_folder_pa
     registration_method = sitk.ImageRegistrationMethod()
 
     if params["InitialTransformViewer"] == True:
-        #sitk.ImageViewer.SetGlobalDefaultApplication(params["imagej_exe_path"])
-        image_viewer = sitk.ImageViewer()
-        image_viewer.SetApplication(params["imagej_exe_path"])
         resampled_image = sitk.Resample(
         moving_image, 
         fixed_image,  # Reference image (defines output space)
@@ -282,7 +280,24 @@ def SITK3DReg(markup_volume:np.ndarray,test_volume:np.ndarray, metrics_folder_pa
         0.0,  # Default pixel value for out-of-range areas
         moving_image.GetPixelID()  # Preserve pixel type (e.g., sitk.sitkFloat32)
         )
-        image_viewer.Execute(sitk.CheckerBoard(fixed_image,resampled_image))
+
+        checkerboard = sitk.CheckerBoard(fixed_image, resampled_image)
+        checkerboard_array = sitk.GetArrayFromImage(checkerboard) 
+        slice_idx = checkerboard_array.shape[0] // 2  # Средний срез
+
+        # Настраиваем отображение
+        plt.figure(figsize=(10, 5))
+        plt.subplot(1, 3, 1)
+        plt.title("Fixed image")
+        plt.imshow(sitk.GetArrayFromImage(fixed_image)[slice_idx, :, :])
+        plt.subplot(1, 3, 2)
+        plt.title("Resampled moving image")
+        plt.imshow(sitk.GetArrayFromImage(resampled_image)[slice_idx, :, :])
+        plt.subplot(1, 3, 3)
+        plt.title("Checkerboard image")
+        plt.imshow(checkerboard_array[slice_idx, :, :])
+        plt.show()
+
 
 
     SamplingMethodDict = {
@@ -333,7 +348,6 @@ def SITK3DReg(markup_volume:np.ndarray,test_volume:np.ndarray, metrics_folder_pa
 
     # Don't optimize in-place, we would possibly like to run this cell multiple times.
     registration_method.SetInitialTransform(initial_transform, inPlace=False)
-
     registration_method.AddCommand(sitk.sitkStartEvent, rgui.start_plot(metrics_folder_path))
     registration_method.AddCommand(sitk.sitkEndEvent, rgui.end_plot)
     registration_method.AddCommand(sitk.sitkMultiResolutionIterationEvent, rgui.update_multires_iterations)
@@ -383,6 +397,11 @@ def SITK3DReg(markup_volume:np.ndarray,test_volume:np.ndarray, metrics_folder_pa
     np.save(f'{os.path.join(metrics_folder_path,"inv_transformation_estimated.npy")}', np.array(transform))
     return(1)
 
+class WrongParam(Exception):
+    def __init__(self):
+        message = '\nInitalTransform is "MATRIX", but path_to_inital_transform_matrix_json is "none_given".\n'
+        super().__init__(message)
+
 def numpy_parser(num):
     return np.float64(num)
 
@@ -402,14 +421,18 @@ if __name__ == "__main__":
     print(f"Loading test from path: {test_volume_path}")
     test_volume = load_volume_from_dir(test_volume_path)
     print("run_SITK")
+    
     if initial_transform_matrix_path[-10:] != "none_given":
-        with open(initial_transform_matrix_path, 'r', encoding='UTF-8') as json_file:
-            matrix = np.array(json.load(json_file, parse_float= numpy_parser, parse_int= numpy_parser )["matrix"],dtype=np.float64)
-        print(f'Initial matrix reading from given path: \n{matrix}')
-        #inv_matrix = inverse_affine_4x4(np.array(matrix))
-        #print(inv_matrix)
-        is_good_result = SITK3DReg(markup_volume, test_volume, metrics_folder_path, alg_params, initial_matrix=matrix)
+            with open(initial_transform_matrix_path, 'r', encoding='UTF-8') as json_file:
+                matrix = np.linalg.inv(np.array(json.load(json_file, parse_float= numpy_parser, parse_int= numpy_parser )["matrix"],dtype=np.float64))
+            print(f'Initial matrix reading from given path: \n{matrix}')
+            #inv_matrix = inverse_affine_4x4(np.array(matrix))
+            #print(inv_matrix)
+            is_good_result = SITK3DReg(markup_volume, test_volume, metrics_folder_path, alg_params, initial_matrix=matrix)
     else:
+        if alg_params["InitalTransform"] == "MATRIX":
+            raise WrongParam()
+            
         is_good_result = SITK3DReg(markup_volume, test_volume, metrics_folder_path, alg_params)
     alg_out_json = f'{processing_folder_path}/alg_out_json.json'
     alg_result = {'output' : is_good_result}
