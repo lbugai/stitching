@@ -211,9 +211,6 @@ python experiment_runner.py /path/to/experiments/exp1/config_exp1.json
                                  "преобразованием в режиме лоскутного наложения."],
 "InitialTransformViewer" : false,
 
-"imagej_exe_path_info" : ["Путь до приложения для просмотра результата совмещения начальным",
-                          "преобразованием, стандартно это рассчитано на использование ImageJ."],
-"imagej_exe_path" : "path/to/ImageJ/ImageJ.exe",
 
 "Metric_info" : ["Тип используемой для итеративного совмещения метрики из набора метрик SITK",
                  "На данный момент реализована мультимодальная метрика совместной информации."],
