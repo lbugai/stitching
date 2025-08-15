@@ -138,12 +138,12 @@ pip install -r required_libraries.txt
 #### 3. Запуск экспериментов.
 После скачивания репозитория, настройки окружения, распаковки архивов в папке `test_data` и настройки конфигов экспериментов можно запустить тестовые эксперименты.
 
-Из папки `runner` в консоли запустите эксперимент `№0` (предварительно в конфиге метода `sitk_config.json` в поле `InitalTransform` необходимо указать значение `MATRIX`)
+Из папки `runner` в консоли запустите эксперимент `№0` (предварительно в конфиге метода `sitk_config.json` в поле `InitalTransform` необходимо указать значение `MOMENTS`, а "InitialTransformViewer" - false)
 
 ```shell
 python experiment_runner.py /path/to/experiments/exp0/config_exp0.json
 ```
-Аналогично, эксперимент `№1` (предварительно в конфиге метода `sitk_config.json` в поле `InitalTransform` необходимо указать значение `MOMENTS`)
+Аналогично, эксперимент `№1` (предварительно в конфиге метода `sitk_config.json` в поле `InitalTransform` необходимо указать значение `MATRIX`, а "InitialTransformViewer" - true)
 ```shell
 python experiment_runner.py /path/to/experiments/exp1/config_exp1.json
 ```
