@@ -187,9 +187,6 @@ def SITK3DReg(markup_volume:np.ndarray,test_volume:np.ndarray, metrics_folder_pa
         "Similarity": sitk.Similarity3DTransform()
     }
 
-    # print("Fixed image size = "+str(np.shape(markup_volume)))
-    # print("Moving image size = "+str(np.shape(test_volume)))
-
     moving_image = sitk.GetImageFromArray(test_volume)
     fixed_image = sitk.GetImageFromArray(markup_volume)
     HistMatching = params["HistMatching"]
@@ -393,8 +390,6 @@ def SITK3DReg(markup_volume:np.ndarray,test_volume:np.ndarray, metrics_folder_pa
     #saving transformation matrices
     with open(f'{os.path.join(metrics_folder_path,"matrices.json")}', 'w', encoding='UTF-8') as f:
         json.dump({"matrix":inv_transform, "inv_matrix":transform}, f)
-    np.save(f'{os.path.join(metrics_folder_path,"transformation_estimated.npy")}', np.array(inv_transform))
-    np.save(f'{os.path.join(metrics_folder_path,"inv_transformation_estimated.npy")}', np.array(transform))
     return(1)
 
 class WrongParam(Exception):
@@ -424,11 +419,10 @@ if __name__ == "__main__":
     
     if initial_transform_matrix_path[-10:] != "none_given":
             with open(initial_transform_matrix_path, 'r', encoding='UTF-8') as json_file:
-                matrix = np.linalg.inv(np.array(json.load(json_file, parse_float= numpy_parser, parse_int= numpy_parser )["matrix"],dtype=np.float64))
+                matrix = np.array(json.load(json_file, parse_float= numpy_parser, parse_int= numpy_parser )["matrix"],dtype=np.float64)
             print(f'Initial matrix reading from given path: \n{matrix}')
-            #inv_matrix = inverse_affine_4x4(np.array(matrix))
-            #print(inv_matrix)
-            is_good_result = SITK3DReg(markup_volume, test_volume, metrics_folder_path, alg_params, initial_matrix=matrix)
+            inv_matrix = np.linalg.inv(matrix)
+            is_good_result = SITK3DReg(markup_volume, test_volume, metrics_folder_path, alg_params, initial_matrix=inv_matrix)
     else:
         if alg_params["InitalTransform"] == "MATRIX":
             raise WrongParam()
