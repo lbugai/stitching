@@ -3,6 +3,7 @@ import sys
 import numpy as np
 import vedo
 import cv2
+import json
 from data_loader import load_volume_from_dir
 
 def get_bndbox(src_volume_size, affine_matrix):
@@ -124,7 +125,8 @@ if __name__ == "__main__":
      
     matrix_path = info_path
     src_volume = load_volume_from_dir(src_volume_path)
-    matrix = np.load(matrix_path)
+    with open(matrix_path, 'r', encoding='UTF-8') as json_file:
+        matrix = np.array(json.load(json_file)["matrix"])
 
     linear_transform = vedo.LinearTransform()
     linear_transform.matrix = matrix
