@@ -208,7 +208,7 @@ if __name__ == '__main__':
                 if registered_volumes_writing:
                     make_folder(f'{sample_result_folder_path}/test_transformed_{j}/')
                     result = subprocess.run([python_venv, "sample_creator.py",
-                                                paths_to_test_volumes[i], f'{sample_metrics_folder_path}/transformation_estimated.npy' ,
+                                                paths_to_test_volumes[i], f'{sample_metrics_folder_path}/matrices.json' ,
                                                 f'{sample_result_folder_path}/test_transformed_{j}/',
                                                 str(minimize_padding),
                                                 str(x_shape), str(y_shape), str(z_shape)],
