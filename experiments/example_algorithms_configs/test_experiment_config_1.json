@@ -1,6 +1,6 @@
 {
     "path_to_results" : "/path/to/experiments/",
-    "experiment_name": "test_example_1",
+    "experiment_name" : "test_example_1",
     "algorithm_name" : "sitk",
     "algorithm_help" : {
         "1" : "sitk"
@@ -25,6 +25,7 @@
     "path_to_moving" : "/path/to/experiments/test_data/nut_enlarged/",
     "path_to_inital_transform_matrix_json" : "path/to/experiments/test_data/nut_enlarged/initial_matrix.json"
 }
+
 
 
 
