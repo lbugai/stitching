@@ -24,6 +24,18 @@ def make_folder(folder_path, delete_existing = True):
         shutil.rmtree(folder_path)
         os.mkdir(folder_path)
 
+def safe_make_folder(target_path):
+    if os.path.exists(target_path):
+        counter = 1
+        while True:
+            new_path = target_path[:-1] + f'_{counter:03d}/'
+            if not os.path.exists(new_path):
+                break
+            counter += 1
+        target_path = new_path
+    make_folder(target_path)
+    return(target_path)
+
 def timestamped_config_safe_copy(source, alg,  alg_source, target_dir):
     base_name = os.path.basename(source)
     alg_base_name = os.path.basename(alg_source)
@@ -56,9 +68,9 @@ if __name__ == '__main__':
         config = json.load(json_file)
     python_venv = sys.executable
     alg_interpreter_path = config["alg_interpreter_path"]
-    main_folder = config["path_to_main_folder"]
-    exp_path = os.path.join(main_folder,f'exp{config["exp"]}/')
-    transformed_volumes_path = os.path.join(main_folder, f'exp{config["exp"]}', "transformed_volumes/")
+    main_folder = config["path_to_results"]
+    exp_path = os.path.join(main_folder,f'{config["experiment_name"]}/')
+    exp_path = safe_make_folder(exp_path)
     VolumeLoadingMode = config["VolumeLoadingMode"]
     minimize_padding = config["minimize_padding"]
     algorithm = config["algorithm_name"]
@@ -292,7 +304,7 @@ if __name__ == '__main__':
                             color_slice = np.stack([uint_volume2[slice_number],uint_volume2[slice_number],uint_volume1[slice_number]],axis=-1).astype(np.uint8)
                             save_path_slice = os.path.join(f'{save_path}/{slice_number:04d}.tif')
                             imwrite(save_path_slice, color_slice)
-                        save_path = os.path.join(f'{sample_result_folder_path}', 'colored_joining_volume')
+                        save_path = os.path.join(f'{sample_result_folder_path}', f'colored_joining_volume_{j}')
                         make_folder(save_path)
                         Parallel(n_jobs=-2, prefer="threads")(delayed(make_color_slice)(slice_number, uint_volume1, uint_volume2, save_path) for slice_number in range(uint_volume2.shape[0]))
                     except:
