@@ -1,6 +1,6 @@
 {
   "TransformType": "Similarity",
-  "InitalTransform": "MOMENTS",
+  "InitialTransform": "MOMENTS",
   "initial_transform_help": {
     "possible_options" : ["GEOMETRY", "MOMENTS", "POINTS", "MATRIX", "MANUAL"]
   },
@@ -34,4 +34,5 @@
   "ShrinkFactors": [4,2,1],
   "SmoothingSigmas": [2,1,0]
 }
+
 
