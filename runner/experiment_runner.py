@@ -90,7 +90,7 @@ if __name__ == '__main__':
         path_to_moving = config["path_to_moving"]
         markup_package_list.append("custom_markup")
         lists_of_paths_to_test_volumes.append([path_to_moving])
-        path_to_init_transform_matrix_list.append(config["path_to_inital_transform_matrix_json"])
+        path_to_init_transform_matrix_list.append(config["path_to_initial_transform_matrix_json"])
         if calculate_metrics:
             path_to_gt_matrix_list.append(config["path_to_gt_matrix_json"])
     else:
@@ -309,3 +309,4 @@ if __name__ == '__main__':
                         Parallel(n_jobs=-2, prefer="threads")(delayed(make_color_slice)(slice_number, uint_volume1, uint_volume2, save_path) for slice_number in range(uint_volume2.shape[0]))
                     except:
                         print('Stackoverflow while creating joined volume')
+
