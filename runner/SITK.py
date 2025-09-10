@@ -204,7 +204,7 @@ def SITK3DReg(markup_volume:np.ndarray,test_volume:np.ndarray, metrics_folder_pa
     print("Moving spacing, origin, direction: ", moving_image.GetSpacing(), moving_image.GetOrigin(), moving_image.GetDirection())
 
     #setting initial transform
-    InitialTransformType = params["InitalTransform"]
+    InitialTransformType = params["InitialTransform"]
     initTrDict = {
         "GEOMETRY": sitk.CenteredTransformInitializerFilter.GEOMETRY,
         "MOMENTS": sitk.CenteredTransformInitializerFilter.MOMENTS
@@ -394,7 +394,7 @@ def SITK3DReg(markup_volume:np.ndarray,test_volume:np.ndarray, metrics_folder_pa
 
 class WrongParam(Exception):
     def __init__(self):
-        message = '\nInitalTransform is "MATRIX", but path_to_inital_transform_matrix_json is "none_given".\n'
+        message = '\nInitialTransform is "MATRIX", but path_to_initial_transform_matrix_json is "none_given".\n'
         super().__init__(message)
 
 def numpy_parser(num):
@@ -424,7 +424,7 @@ if __name__ == "__main__":
             inv_matrix = np.linalg.inv(matrix)
             is_good_result = SITK3DReg(markup_volume, test_volume, metrics_folder_path, alg_params, initial_matrix=inv_matrix)
     else:
-        if alg_params["InitalTransform"] == "MATRIX":
+        if alg_params["InitialTransform"] == "MATRIX":
             raise WrongParam()
             
         is_good_result = SITK3DReg(markup_volume, test_volume, metrics_folder_path, alg_params)
@@ -435,3 +435,4 @@ if __name__ == "__main__":
         json.dump(alg_result, file)
 
     print(f'is_good_result = {is_good_result}')
+
