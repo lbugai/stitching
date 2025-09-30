@@ -179,6 +179,42 @@ def rotations_to_versor(theta_x, theta_y, theta_z, order='XYZ'):
     # Return in SimpleITK order (x, y, z, w)
     return [q_total[1], q_total[2], q_total[3], q_total[0]]
 
+def Scale_rotation_matrix_3x3(scale, rotation_angles_degrees):
+    """
+    Create a 3x3 scale and rotation matrix with Euler angles in OX, OY, OZ order.
+    """
+    rx, ry, rz = np.radians(rotation_angles_degrees)
+    
+    # Individual rotation matrices
+    Rx = np.array([
+        [1, 0, 0],
+        [0, np.cos(rx), -np.sin(rx)],
+        [0, np.sin(rx), np.cos(rx)]
+    ])
+    
+    Ry = np.array([
+        [np.cos(ry), 0, np.sin(ry)],
+        [0, 1, 0],
+        [-np.sin(ry), 0, np.cos(ry)]
+    ])
+    
+    Rz = np.array([
+        [np.cos(rz), -np.sin(rz), 0],
+        [np.sin(rz), np.cos(rz), 0],
+        [0, 0, 1]
+    ])
+    
+    S = np.array([
+        [scale, 0, 0],
+        [0, scale, 0],
+        [0, 0, scale]
+    ])
+    # Combine in order: Scale first, then rotate in OX, OY, OZ order
+    # Matrix multiplication order: Rz * Ry * Rx * S
+    combined_matrix = Rz @ Ry @ Rx @ S
+    
+    return combined_matrix
+
 def SITK3DReg(markup_volume:np.ndarray,test_volume:np.ndarray, metrics_folder_path, params, initial_matrix = np.array([[0]])):
     #parameters
 
@@ -213,17 +249,23 @@ def SITK3DReg(markup_volume:np.ndarray,test_volume:np.ndarray, metrics_folder_pa
     if InitialTransformType=="MANUAL":
         InitialTransformParams = params["InitialTransformParams"]
         angles = InitialTransformParams["rotation"]
-        versor = rotations_to_versor(angles[0], angles[1], angles[2])
         initial_transform = sitk.CenteredTransformInitializer(
-                fixed_image,
-                moving_image,
-                TrDict[params["TransformType"]],
-                sitk.CenteredTransformInitializerFilter.GEOMETRY
-        ) 
-        initial_transform.SetScale(InitialTransformParams["scale"])
-        initial_transform.SetRotation(versor)
-        print(initial_transform.GetTranslation())
-        print(initial_transform.GetVersor())
+                    fixed_image,
+                    moving_image,
+                    TrDict[params["TransformType"]],
+                    sitk.CenteredTransformInitializerFilter.GEOMETRY
+            ) 
+        if params["TransformType"] == "Similarity":
+            versor = rotations_to_versor(-angles[0], -angles[1], -angles[2], order='ZYX')
+            initial_transform.SetScale(1.0/InitialTransformParams["scale"])
+            initial_transform.SetRotation(versor)
+        else:
+            matrix = Scale_rotation_matrix_3x3(InitialTransformParams["scale"],angles)
+            extended_matrix = np.identity(4)
+            extended_matrix[:3,:3] = matrix
+            inv_ext_matrix = inverse_affine_4x4(extended_matrix)
+            initial_transform.SetMatrix(inv_ext_matrix[:3,:3].flatten().tolist())
+        # print(initial_transform.GetTranslation())
         if InitialTransformParams["InitialTranslationOption"] == "MOMENTS":
             moments_initializer = sitk.CenteredTransformInitializer(
                 fixed_image,
@@ -236,16 +278,21 @@ def SITK3DReg(markup_volume:np.ndarray,test_volume:np.ndarray, metrics_folder_pa
         elif InitialTransformParams["InitialTranslationOption"]=="MANUAL":
             init_translation = InitialTransformParams["translation"]
             initial_transform.SetTranslation(init_translation)
-        print(initial_transform.GetTranslation())
+        # print(initial_transform.GetTranslation())
     elif InitialTransformType == "MATRIX":
         initial_transform = TrDict[params["TransformType"]]
         try:
             scale, matrix3x3 = extract_uniform_scale_and_rotation(initial_matrix[:3,:3])
-            versor = rotation_matrix_to_quaternion(matrix3x3)
             translation  = initial_matrix[:3,3]
-            initial_transform.SetScale(scale)
-            initial_transform.SetRotation(versor)
-            initial_transform.SetTranslation(translation.tolist())
+            if params["TransformType"] == "Similarity":
+                versor = rotation_matrix_to_quaternion(matrix3x3)
+                initial_transform.SetScale(scale)
+                initial_transform.SetRotation(versor)
+                initial_transform.SetTranslation(translation.tolist())
+            else:
+                print(initial_matrix[:3,:3].flatten().tolist())
+                initial_transform.SetMatrix(initial_matrix[:3,:3].flatten().tolist())
+                initial_transform.SetTranslation(translation.tolist())
         except:
             raise ValueError("Wrong initial matrix input")
     elif InitialTransformType == "POINTS":
@@ -345,7 +392,7 @@ def SITK3DReg(markup_volume:np.ndarray,test_volume:np.ndarray, metrics_folder_pa
 
     # Don't optimize in-place, we would possibly like to run this cell multiple times.
     registration_method.SetInitialTransform(initial_transform, inPlace=False)
-    registration_method.AddCommand(sitk.sitkStartEvent, rgui.start_plot(metrics_folder_path))
+    registration_method.AddCommand(sitk.sitkStartEvent, rgui.start_plot(params["TransformType"],metrics_folder_path))
     registration_method.AddCommand(sitk.sitkEndEvent, rgui.end_plot)
     registration_method.AddCommand(sitk.sitkMultiResolutionIterationEvent, rgui.update_multires_iterations)
     registration_method.AddCommand(sitk.sitkIterationEvent, lambda: rgui.plot_values(registration_method))
@@ -394,7 +441,7 @@ def SITK3DReg(markup_volume:np.ndarray,test_volume:np.ndarray, metrics_folder_pa
 
 class WrongParam(Exception):
     def __init__(self):
-        message = '\nInitialTransform is "MATRIX", but path_to_initial_transform_matrix_json is "none_given".\n'
+        message = '\nInitialTransform is "MATRIX", but path_to_initial_transform_matrix_json does not contain suitable json with transformation matrix.\n'
         super().__init__(message)
 
 def numpy_parser(num):
@@ -417,16 +464,16 @@ if __name__ == "__main__":
     test_volume = load_volume_from_dir(test_volume_path)
     print("run_SITK")
     
-    if initial_transform_matrix_path[-10:] != "none_given":
+    if alg_params["InitialTransform"] == "MATRIX":
+        try:
             with open(initial_transform_matrix_path, 'r', encoding='UTF-8') as json_file:
                 matrix = np.array(json.load(json_file, parse_float= numpy_parser, parse_int= numpy_parser )["matrix"],dtype=np.float64)
             print(f'Initial matrix reading from given path: \n{matrix}')
-            inv_matrix = np.linalg.inv(matrix)
+            inv_matrix = inverse_affine_4x4(matrix)
             is_good_result = SITK3DReg(markup_volume, test_volume, metrics_folder_path, alg_params, initial_matrix=inv_matrix)
-    else:
-        if alg_params["InitialTransform"] == "MATRIX":
+        except:
             raise WrongParam()
-            
+    else:       
         is_good_result = SITK3DReg(markup_volume, test_volume, metrics_folder_path, alg_params)
     alg_out_json = f'{processing_folder_path}/alg_out_json.json'
     alg_result = {'output' : is_good_result}
