@@ -15,7 +15,6 @@
     "translation": [0, 0, 0]
   },
   "InitialTransformViewer" : false,
-  "imagej_exe_path": "",
   "Metric": "MattesMutualInformation",
   "MMI_MetricNumberOfHistogramBins": 80,
   "Interpolator": "Linear",
@@ -34,5 +33,3 @@
   "ShrinkFactors": [4,2,1],
   "SmoothingSigmas": [2,1,0]
 }
-
-
