@@ -53,6 +53,44 @@ def timestamped_config_safe_copy(source, alg,  alg_source, target_dir):
     shutil.copy(alg_source, os.path.join(target_path,alg_base_name))
     pass
 
+def inverse_affine_4x4(matrix_4x4):
+    """
+    Computes the inverse of a 4x4 affine transformation matrix.
+    
+    Args:
+        matrix_4x4 (np.ndarray): Input 4x4 affine matrix
+    
+    Returns:
+        np.ndarray: 4x4 inverse matrix
+    
+    Raises:
+        ValueError: If matrix is singular or not affine
+    """
+    # Validate input
+    if matrix_4x4.shape != (4, 4):
+        raise ValueError("Input must be a 4x4 matrix")
+    if not np.allclose(matrix_4x4[3, :], [0, 0, 0, 1]):
+        raise ValueError("Last row must be [0, 0, 0, 1]")
+
+    # Extract components
+    A = matrix_4x4[:3, :3]
+    t = matrix_4x4[:3, 3]
+
+    try:
+        # Compute inverse of linear transform
+        A_inv = np.linalg.inv(A)
+    except np.linalg.LinAlgError:
+        raise ValueError("Linear transform component is singular (cannot be inverted)")
+
+    # Compute inverse translation
+    t_inv = -A_inv @ t
+
+    # Build inverse matrix
+    inv_matrix = np.eye(4)
+    inv_matrix[:3, :3] = A_inv
+    inv_matrix[:3, 3] = t_inv
+    return inv_matrix
+
 def crop_and_pad_to_shape(array, t_shape):
     """
     Returns croped and expanded volume, matching the specified target shape.
@@ -61,6 +99,20 @@ def crop_and_pad_to_shape(array, t_shape):
     cropped = array[slices]
     padding = [(0, max(0, t - s)) for s, t in zip(cropped.shape, t_shape)]
     return np.pad(cropped, padding, mode='constant', constant_values = 0)
+
+def calculate_metrics_transform_fail(f_markup_path,f_sample_result_folder_path,f_j,f_SelectedMetricsList):
+    f_metric_volume = load_volume_from_dir(f_markup_path)
+    metrics.calculate_metrics(f'{f_sample_result_folder_path}/metrics/{f_j}/',
+                                0, 0,
+                                0, f_metric_volume, f_SelectedMetricsList, registration_fail=True)
+    del f_metric_volume
+
+def calculate_metrics_volume_creation_fail(f_markup_path,f_sample_result_folder_path,f_j,f_deviation_matrix,f_SelectedMetricsList):
+    f_metric_volume = load_volume_from_dir(f_markup_path)
+    metrics.calculate_metrics(f'{f_sample_result_folder_path}/metrics/{f_j}/',
+                                0, 0,
+                                f_deviation_matrix, f_metric_volume, f_SelectedMetricsList, volume_creation_fail= True)
+    del f_metric_volume
 
 if __name__ == '__main__':
     config_path = sys.argv[1]
@@ -125,8 +177,22 @@ if __name__ == '__main__':
             repeat = 1
             if calculate_metrics:
                 with open(path_to_gt_matrix_list[index], 'r', encoding='UTF-8') as json_file:
-                    metric_matrix = json.load(json_file)["gt_matrix"]
-                metric_matrix = np.array(metric_matrix)
+                    gt_json = json.load(json_file)
+                if "inv_gt_matrix" in gt_json:
+                    inv_gt_matrix = np.array(gt_json["inv_gt_matrix"])
+                elif "gt_matrix" in gt_json:
+                    inv_gt_matrix = inverse_affine_4x4(np.array(gt_json["gt_matrix"]))
+                else:
+                    metric_names = ["norm_geometry_MSE",
+                                    "norm_geometry_rmse",
+                                    "geometry_rmse",
+                                    "normalized maximum deviation of distances (from geometry MSE)",
+                                    "maximum deviation of distances (from geometry MSE)"]
+                    for metric in config["SelectedMetricsList"]:
+                        if metric in metric_names:
+                            print("Unable to extract inv_gt_matrix or gt_matrix out of provided gt matrix json!")
+                            sys.exit()
+                    inv_gt_matrix = np.eye(4)
 
             make_folder(f'{sample_result_folder_path}/metrics/') 
             for j in range(repeat):
@@ -187,20 +253,10 @@ if __name__ == '__main__':
                     print(f'alg_out = {alg_out}')
                     if alg_out["output"] == 0:
                         print(f'Failed to estimate transform with {algorithm}')
-                        if calculate_metrics :
-                            metric_volume = load_volume_from_dir(markup_path)
-                            metrics.calculate_metrics(f'{sample_result_folder_path}/metrics/{j}/',
-                                                0, 0,
-                                                metric_matrix, 0, metric_volume, is_fail=True)
-                            del metric_volume
+                        if calculate_metrics : calculate_metrics_transform_fail(markup_path,sample_result_folder_path,j,config["SelectedMetricsList"])
                         continue
                 except:
-                    if calculate_metrics :
-                        metric_volume = load_volume_from_dir(markup_path)
-                        metrics.calculate_metrics(f'{sample_result_folder_path}/metrics/{j}/',
-                                            0, 0,
-                                            metric_matrix, 0, metric_volume, is_fail=True)
-                        del metric_volume
+                    if calculate_metrics : calculate_metrics_transform_fail(markup_path,sample_result_folder_path,j,config["SelectedMetricsList"])
                     print(f'Stackoverflow while calculating {algorithm} matrix')
                     continue
 
@@ -210,14 +266,14 @@ if __name__ == '__main__':
                 np.set_printoptions(precision = 8, suppress=True)
                 if calculate_metrics :
                     print("GT matrix")
-                    print(metric_matrix)
+                    print(inverse_affine_4x4(inv_gt_matrix))
                     print("Deviation matrix")
-                    deviation_matrix = transformation_estimated @ metric_matrix
+                    deviation_matrix = transformation_estimated @ inv_gt_matrix
                     print(deviation_matrix)
                 print(f"Estimated by {algorithm} matrix")
                 print(transformation_estimated)
                 x_shape, y_shape, z_shape = get_volume_shape(markup_path)[::-1]
-                if registered_volumes_writing:
+                if registered_volumes_writing or (calculate_metrics and "MSE" in config["SelectedMetricsList"]):
                     make_folder(f'{sample_result_folder_path}/test_transformed_{j}/')
                     result = subprocess.run([python_venv, "sample_creator.py",
                                                 paths_to_test_volumes[i], f'{sample_metrics_folder_path}/matrices.json' ,
@@ -227,12 +283,7 @@ if __name__ == '__main__':
                                                 stderr=subprocess.PIPE, text = True)
                     print(f'result.stderr = {result.stderr}') 
                     if result.stderr:
-                        if calculate_metrics :
-                            metric_volume = load_volume_from_dir(markup_path)
-                            metrics.calculate_metrics(f'{sample_result_folder_path}/metrics/{j}/',
-                                                0, 0,
-                                                metric_matrix, deviation_matrix, metric_volume, is_fail=True)
-                            del metric_volume
+                        if calculate_metrics : calculate_metrics_volume_creation_fail(markup_path,sample_result_folder_path,j,deviation_matrix,config["SelectedMetricsList"])
                         print('Stackoverflow while creating markup transformed volume')
                         continue
                     try:
@@ -252,6 +303,7 @@ if __name__ == '__main__':
                             save_path = os.path.join(f'{sample_result_folder_path}/padded_test_{j}/{k:04d}.tif')
                             imwrite(save_path, Slice) # from Re
                     except:
+                        if calculate_metrics : calculate_metrics_volume_creation_fail(markup_path,sample_result_folder_path,j,deviation_matrix,config["SelectedMetricsList"])
                         print('Stackoverflow while creating padded test volume')
                         continue
 
@@ -269,6 +321,7 @@ if __name__ == '__main__':
                             save_path = os.path.join(f'{sample_result_folder_path}/padded_markup_{j}/{k:04d}.tif')
                             imwrite(save_path, Slice) # from cv2 
                     except:
+                        if calculate_metrics : calculate_metrics_volume_creation_fail(markup_path,sample_result_folder_path,j,deviation_matrix,config["SelectedMetricsList"])
                         print('Stackoverflow while creating padded markup volume')
                         continue
 
@@ -277,36 +330,50 @@ if __name__ == '__main__':
                             metric_volume = load_volume_from_dir(markup_path)
                             metrics.calculate_metrics(f'{sample_result_folder_path}/metrics/{j}/',
                                                     padded_markup, padded_test,
-                                                    metric_matrix, deviation_matrix, metric_volume)
+                                                    deviation_matrix, metric_volume, config["SelectedMetricsList"])
                             del metric_volume
                     except Exception as e:
                             print(f'Error while calculating metrics:\n{e}')
+                    if not registered_volumes_writing:
+                        shutil.rmtree(f'{sample_result_folder_path}/test_transformed_{j}/')
+                        shutil.rmtree(f'{sample_result_folder_path}/padded_markup_{j}/')
+                        shutil.rmtree(f'{sample_result_folder_path}/padded_test_{j}/')
+                    else:
+                        try:
+                            print('Saving join...')
+                            np.clip(padded_markup, a_min=0, a_max=None, out=padded_markup)
+                            np.clip(padded_test, a_min=0, a_max=None, out=padded_test)
+
+                            # max_value = percentile_across_arrays([volume1,volume2], 99)
+                            # print('99-percentile = ', max_value)
+                            max_value1 = np.percentile(padded_markup, 99)
+                            max_value2 = np.percentile(padded_test, 99)
+                            print('99-percentile1 = ', max_value1, '99-percentile2 = ', max_value2 )
+
+                            uint_volume1 =  np.floor(255 * padded_markup / max_value1)
+                            del padded_markup
+                            uint_volume2 = np.floor( 255 * padded_test/ max_value2)
+                            del padded_test
+
+                            np.clip(uint_volume1, a_min=None, a_max=255, out=uint_volume1)
+                            np.clip(uint_volume2, a_min=None, a_max=255, out=uint_volume2)
+
+                            def make_color_slice(slice_number, uint_volume1, uint_volume2, save_path):
+                                color_slice = np.stack([uint_volume2[slice_number],uint_volume2[slice_number],uint_volume1[slice_number]],axis=-1).astype(np.uint8)
+                                save_path_slice = os.path.join(f'{save_path}/{slice_number:04d}.tif')
+                                imwrite(save_path_slice, color_slice)
+                            save_path = os.path.join(f'{sample_result_folder_path}', f'colored_joining_volume_{j}')
+                            make_folder(save_path)
+                            Parallel(n_jobs=-2, prefer="threads")(delayed(make_color_slice)(slice_number, uint_volume1, uint_volume2, save_path) for slice_number in range(uint_volume2.shape[0]))
+                        except:
+                            print('Stackoverflow while creating joined volume')
+                elif calculate_metrics:
                     try:
-                        print('Saving join...')
-                        np.clip(padded_markup, a_min=0, a_max=None, out=padded_markup)
-                        np.clip(padded_test, a_min=0, a_max=None, out=padded_test)
-
-                        # max_value = percentile_across_arrays([volume1,volume2], 99)
-                        # print('99-percentile = ', max_value)
-                        max_value1 = np.percentile(padded_markup, 99)
-                        max_value2 = np.percentile(padded_test, 99)
-                        print('99-percentile1 = ', max_value1, '99-percentile2 = ', max_value2 )
-
-                        uint_volume1 =  np.floor(255 * padded_markup / max_value1)
-                        del padded_markup
-                        uint_volume2 = np.floor( 255 * padded_test/ max_value2)
-                        del padded_test
-
-                        np.clip(uint_volume1, a_min=None, a_max=255, out=uint_volume1)
-                        np.clip(uint_volume2, a_min=None, a_max=255, out=uint_volume2)
-
-                        def make_color_slice(slice_number, uint_volume1, uint_volume2, save_path):
-                            color_slice = np.stack([uint_volume2[slice_number],uint_volume2[slice_number],uint_volume1[slice_number]],axis=-1).astype(np.uint8)
-                            save_path_slice = os.path.join(f'{save_path}/{slice_number:04d}.tif')
-                            imwrite(save_path_slice, color_slice)
-                        save_path = os.path.join(f'{sample_result_folder_path}', f'colored_joining_volume_{j}')
-                        make_folder(save_path)
-                        Parallel(n_jobs=-2, prefer="threads")(delayed(make_color_slice)(slice_number, uint_volume1, uint_volume2, save_path) for slice_number in range(uint_volume2.shape[0]))
-                    except:
-                        print('Stackoverflow while creating joined volume')
+                        metric_volume = load_volume_from_dir(markup_path)
+                        metrics.calculate_metrics(f'{sample_result_folder_path}/metrics/{j}/',
+                                                0, 0,
+                                                deviation_matrix, metric_volume, config["SelectedMetricsList"])
+                        del metric_volume
+                    except Exception as e:
+                            print(f'Error while calculating metrics:\n{e}')
 
