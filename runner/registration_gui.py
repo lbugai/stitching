@@ -3,13 +3,16 @@ import shutil
 import matplotlib.pyplot as plt
 import pandas as pd
 
-def start_plot(result_folder_path):
+def start_plot(TransformType,result_folder_path):
     """
     Callback invoked when the StartEvent happens, sets up our new data.
     """
     global metric_values, multires_iterations, ax, fig, df, res_path
     fig, ax = plt.subplots(1, 1, figsize=(8, 4))
-    df = pd.DataFrame({"r1": [], "r2": [], "r3": [],"trX": [], "trY": [], "trZ": [],"scale": []})
+    if TransformType=="Affine":
+        df = pd.DataFrame({"m00": [], "m10": [], "m20": [],"m01": [], "m11": [], "m21": [],"m02": [],"m12": [],"m22": [],"trX": [],"trY": [],"trZ": []})
+    elif TransformType=="Similarity":
+        df = pd.DataFrame({"r1": [], "r2": [], "r3": [],"trX": [], "trY": [], "trZ": [],"scale": []})
     res_path = result_folder_path
     metric_values = []
     multires_iterations = []
@@ -60,7 +63,6 @@ def plot_values(registration_method):
     global metric_values, multires_iterations, ax, fig, df
 
     metric_values.append(registration_method.GetMetricValue())
-    
     if len(metric_values)%20 == 0:
         print(f"SITK interation number = {len(metric_values)}", end='\r')
     #print(registration_method.GetOptimizerPosition())
