@@ -39,13 +39,10 @@ def mse(markup_volume1, volume2, ax = None):
     """
     return np.sum(np.square(markup_volume1 - volume2))/(2 * np.sum(np.square(markup_volume1)))
 
-def geometry_mse(markup_volume, gt_transform, error_transform):
+def geometry_mse(markup_volume, error_transform):
     """
     Mean squared error - transform estimation.
     """
-    gt_a = gt_transform[:3,:3]
-    gt_b = gt_transform[:3,3]
-
     err_a = error_transform[:3,:3]
     err_b = error_transform[:3,3]
 
@@ -70,6 +67,16 @@ def geometry_mse(markup_volume, gt_transform, error_transform):
         print(founded_transfrom_point)
         print(distances[i])
         print('---------------------------------')
+
+    # gt_transfrom_points_vedo = vedo.Points(gt_transfrom_points, r=5)
+    # founded_transfrom_points_vedo = vedo.Points(founded_transfrom_points, r=5)
+    # plotter = vedo.Plotter()
+    # plotter.add(gt_transfrom_points_vedo.color('red'))
+    # plotter.add(founded_transfrom_points_vedo.color('blue'))
+    # #plotter.show(f'{float((np.square(distances)).mean(axis = None) / np.linalg.norm([z, y, x])**2), float(((np.square(distances)).mean(axis = None) / (np.linalg.norm([z, y, x])**2))**0.5), float(max(distances))}', axes = 1)
+    # plotter.remove(gt_transfrom_points_vedo.color('red'),
+    #                founded_transfrom_points_vedo.color('blue'))
+    
     return (np.square(distances)).mean(axis = None) / np.linalg.norm([z, y, x])**2, ((np.square(distances)).mean(axis = None) / (np.linalg.norm([z, y, x])**2))**0.5, ((np.square(distances)).mean(axis = None))**0.5, max(distances)/np.linalg.norm([z, y, x]) , max(distances)
 
 def geometry_mse_calibration(markup_volume, gt_transform):
@@ -101,6 +108,12 @@ def geometry_mse_calibration(markup_volume, gt_transform):
 
     return (np.square(distances)).mean(axis = None) / np.linalg.norm([z, y, x])**2, ((np.square(distances)).mean(axis = None) / (np.linalg.norm([z, y, x])**2))**0.5, max(distances)
 
+def final_rotation_angle(gt_transform, founded_transform):
+    """
+    Returns final rotation angle between 
+    the column vectors of gt transformation matrix
+    and founded transformation matrix. ???
+    """
 def pad_to_shape(array, t_shape):
     """
     Returns the expanded volume to the specified target shape.
@@ -122,13 +135,17 @@ def show_volumes(v1, v2):
 def apply_transform(volume, matrix):
     linear_transform = vedo.LinearTransform()
     linear_transform.matrix = matrix
+    #print(f'transform matrix = {matrix}')
     new_volume_shape = np.array(get_bndbox(volume.shape, matrix))
+    #print(f'new volume shape (x, y, z) = {new_volume_shape}')
+    
     vedo_volume = vedo.Volume(volume)
     vedo_volume.permute_axes(2,1,0)
     try:
         vedo_volume.apply_transform(linear_transform, fit = True, interpolation = 'linear')
     except:
         pass
+
     empty_arr = np.zeros(new_volume_shape)
     vedo_volume_new = vedo.Volume(empty_arr, origin = [0,0,0], dims = empty_arr.shape)
     vedo_volume_new.resample_data_from(vedo_volume)
@@ -136,71 +153,52 @@ def apply_transform(volume, matrix):
     vedo_volume.permute_axes(2,1,0)
     return vedo_volume.tonumpy().astype(np.float32)
 
-def estimation_interpolation_error(volume, matrix):
-    volume = volume.astype(np.float32)
-    volume_transformed = apply_transform(volume, matrix)
-    linear_transform = vedo.LinearTransform()
-    linear_transform.matrix = matrix
-    volume_backtransformed = apply_transform(volume_transformed, linear_transform.invert().matrix)
-    target_shape = np.maximum(volume.shape, volume_backtransformed.shape)
-    padded_volume = pad_to_shape(volume, target_shape)
-    padded_volume_backtransformed = pad_to_shape(volume_backtransformed, target_shape)
-    interp_mse = mse(padded_volume_backtransformed, padded_volume)
-    print(f'interp_mse = {interp_mse}')
-    return interp_mse
-
 def calculate_metrics(sample_result_folder_path,
                       markup_volume, transformed_volume,
-                      gt_transform, error_transform, metric_volume, is_fail = False):
+                      error_transform, metric_volume, metric_name_list, registration_fail = False, volume_creation_fail = False ):
     """
     Calculates and writes metrics in json: intensity mse, geometry mse, geometry rmse, maximum deviation.
     """
     metrics_store = {}
-
-    interpolation_mse = 0.5
-
-    if is_fail:
-        metrics_store["interpolation_mse"] = interpolation_mse
-        metrics_store["MSE"] =  0.5
-        metrics_store["norm_geometry_MSE"] =  0.2
-        metrics_store["norm_geometry_rmse"] =  0.2
-        metrics_store["geometry_rmse"] =  - 10
-        metrics_store["maximum deviation of distances (from geometry MSE)"] = - 10
-        metrics_store["normalized maximum deviation of distances (from geometry MSE)"] = 0.2
+    a = np.array(["norm_geometry_MSE","norm_geometry_rmse","geometry_rmse","maximum deviation of distances (from geometry MSE)","normalized maximum deviation of distances (from geometry MSE)"])
+    b = np.array(metric_name_list)
+    if registration_fail:
+        metrics_store["MSE"] =  -1
+        metrics_store["norm_geometry_MSE"] =  -1
+        metrics_store["norm_geometry_rmse"] =  -1
+        metrics_store["geometry_rmse"] =  - 1
+        metrics_store["maximum deviation of distances (from geometry MSE)"] = - 1
+        metrics_store["normalized maximum deviation of distances (from geometry MSE)"] = -1
         with open(f'{sample_result_folder_path}metrics.json', 'w', encoding='UTF-8') as f:
             json.dump(metrics_store, f)
         return 0
-    metrics_store["interpolation_mse"] = float(interpolation_mse)
-    try:
-        calculated_mse = mse(markup_volume, transformed_volume)
-    except:
-        calculated_mse = 0.5
     
-    calculated_norm_geometry_mse, norm_geometry_rmse, geometry_rmse, norm_max_dev, max_dev = geometry_mse(metric_volume, gt_transform, error_transform)
+    if np.isin(a, b).any():
+        calculated_norm_geometry_mse, norm_geometry_rmse, geometry_rmse, norm_max_dev, max_dev = geometry_mse(metric_volume, error_transform)
+        print(f'normalized_geometry_MSE = {calculated_norm_geometry_mse}')
+        print(f'normalized_geometry_RMSE = {norm_geometry_rmse}')
+        print(f'geometry_RMSE = {geometry_rmse}')
+        print(f'normalized_max_deviation = {norm_max_dev}')
+        print(f'max_deviation = {max_dev}')
+        metrics_store["norm_geometry_MSE"] = float(calculated_norm_geometry_mse)
+        metrics_store["norm_geometry_rmse"] = float(norm_geometry_rmse)
+        metrics_store["geometry_rmse"] = float(geometry_rmse)
+        metrics_store["normalized maximum deviation of distances (from geometry MSE)"] = float(norm_max_dev)
+        metrics_store["maximum deviation of distances (from geometry MSE)"] = float(max_dev)
 
-    if calculated_mse > 0.5:
-        calculated_mse = 0.5
-
-    if calculated_norm_geometry_mse > 0.2:
-        calculated_norm_geometry_mse = 0.2
+    if volume_creation_fail:
+        metrics_store["MSE"] =  -1
+        with open(f'{sample_result_folder_path}metrics.json', 'w', encoding='UTF-8') as f:
+            json.dump(metrics_store, f)
+        return 0
     
-    if norm_geometry_rmse > 0.2:
-        norm_geometry_rmse = 0.2
-
-    
-    print(f'MSE = {calculated_mse}')
-    print(f'normalized_geometry_MSE = {calculated_norm_geometry_mse}')
-    print(f'normalized_geometry_RMSE = {norm_geometry_rmse}')
-    print(f'geometry_RMSE = {geometry_rmse}')
-    print(f'normalized_max_deviation = {norm_max_dev}')
-    print(f'max_deviation = {max_dev}')
-    metrics_store["MSE"] = float(calculated_mse)
-    metrics_store["norm_geometry_MSE"] = float(calculated_norm_geometry_mse)
-    metrics_store["norm_geometry_rmse"] = float(norm_geometry_rmse)
-    metrics_store["geometry_rmse"] = float(geometry_rmse)
-    metrics_store["normalized maximum deviation of distances (from geometry MSE)"] = float(norm_max_dev)
-    metrics_store["maximum deviation of distances (from geometry MSE)"] = float(max_dev)
-
+    if "MSE" in metric_name_list:
+        try:
+            calculated_mse = mse(markup_volume, transformed_volume)
+        except:
+            calculated_mse = -1
+        print(f'MSE = {calculated_mse}')
+        metrics_store["MSE"] = float(calculated_mse)
 
     with open(f'{sample_result_folder_path}metrics.json', 'w', encoding='UTF-8') as f:
         json.dump(metrics_store, f)
