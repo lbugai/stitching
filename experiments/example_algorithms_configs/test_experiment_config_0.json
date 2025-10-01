@@ -23,8 +23,9 @@
 
     "path_to_markup" : "/path/to/experiments/test_data/nut/",
     "path_to_moving" : "/path/to/experiments/test_data/nut_rotated/",
-    "path_to_initial_transform_matrix_json" : "none_given"
+    "path_to_initial_transform_matrix_json" : ""
 }
+
 
 
 
