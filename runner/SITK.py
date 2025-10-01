@@ -219,7 +219,7 @@ def SITK3DReg(markup_volume:np.ndarray,test_volume:np.ndarray, metrics_folder_pa
     #parameters
 
     TrDict = {
-        "Affine3D": sitk.AffineTransform(3),
+        "Affine": sitk.AffineTransform(3),
         "Similarity": sitk.Similarity3DTransform()
     }
 
