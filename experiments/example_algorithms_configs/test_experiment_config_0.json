@@ -14,17 +14,18 @@
     "minimize_padding" : true,
     "calculate_metrics": false,
     "path_to_gt_matrix_json" : "",
-    "SelectedVisualizedMetricsList" : ["MSE",
-                                       "normalized maximum deviation of distances (from geometry MSE)",
-                                       "maximum deviation of distances (from geometry MSE)",
-                                       "norm_geometry_rmse",
-                                       "geometry_rmse",
-                                       "norm_geometry_MSE"],
+    "SelectedMetricsList" : ["MSE",
+                           "normalized maximum deviation of distances (from geometry MSE)",
+                           "maximum deviation of distances (from geometry MSE)",
+                           "norm_geometry_rmse",
+                           "geometry_rmse",
+                           "norm_geometry_MSE"],
 
     "path_to_markup" : "/path/to/experiments/test_data/nut/",
     "path_to_moving" : "/path/to/experiments/test_data/nut_rotated/",
     "path_to_initial_transform_matrix_json" : ""
 }
+
 
 
 
